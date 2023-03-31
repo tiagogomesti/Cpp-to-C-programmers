@@ -5,6 +5,7 @@ project(
 )
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 enable_testing()
 add_subdirectory(src)
