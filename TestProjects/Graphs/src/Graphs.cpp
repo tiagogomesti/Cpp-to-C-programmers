@@ -39,6 +39,18 @@ Node::~Node(void)
 {
 }
 
+bool Node::is_connected(Node &node)
+{
+    CheckEdgeConnection check = is_connected_to(*this, node.node_id);
+    return check.is_connected;
+}
+
+bool Node::is_connected(uint32_t node_id)
+{
+    CheckEdgeConnection check = is_connected_to(*this, node_id);
+    return check.is_connected;
+}
+
 vector<Edge> Node::connected_nodes(void)
 {
     return this->edges;
@@ -56,6 +68,11 @@ uint32_t Node::get_node_id(void)
 
 void Node::add_edge(Node &node, uint32_t weight)
 {
+    if (weight == 0)
+    {
+        return;
+    }
+
     CheckEdgeConnection check = is_connected_to(*this, node.node_id);
 
     if (check.is_connected)
@@ -69,8 +86,25 @@ void Node::add_edge(Node &node, uint32_t weight)
     }
 }
 
+uint32_t Node::get_weight(uint32_t id)
+{
+    CheckEdgeConnection check = is_connected_to(*this, id);
+
+    return check.is_connected ? this->edges[check.array_index].weight : 0;
+}
+
+uint32_t Node::get_weight(Node &node)
+{
+    return this->get_weight(node.get_node_id());
+}
+
 void Node::change_weight(Node &node, uint32_t new_weight)
 {
+    if (new_weight == 0)
+    {
+        return;
+    }
+
     CheckEdgeConnection check = is_connected_to(*this, node.node_id);
 
     if (!check.is_connected)
@@ -136,17 +170,55 @@ Graph::~Graph(void)
 {
 }
 
+bool Graph::is_empty(void)
+{
+    return this->nodes.size() == 0;
+}
+
 void Graph::add_node(uint32_t id)
 {
-    CheckIfNodesIsPresent check = is_this_node_already_present(*this, id);
-
-    if (check.is_present)
+    if (this->is_node_present(id))
     {
         return;
     }
 
     Node node(id);
     this->nodes.insert(nodes.end(), node);
+}
+
+bool Graph::is_node_present(uint32_t id)
+{
+    CheckIfNodesIsPresent check = is_this_node_already_present(*this, id);
+    return check.is_present;
+}
+
+bool Graph::are_node_connected(uint32_t node_id_from, uint32_t node_id_to)
+{
+    CheckIfNodesIsPresent check = is_this_node_already_present(*this, node_id_from);
+
+    if (!check.is_present)
+    {
+        return false;
+    }
+
+    return this->nodes[check.array_index].is_connected(node_id_to);
+}
+
+uint32_t Graph::get_node_connection_weight(uint32_t node_id_from, uint32_t node_id_to)
+{
+    CheckIfNodesIsPresent check = is_this_node_already_present(*this, node_id_from);
+
+    if (!check.is_present)
+    {
+        return false;
+    }
+
+    return this->nodes[check.array_index].get_weight(node_id_to);
+}
+
+uint32_t Graph::get_num_nodes(void)
+{
+    return this->nodes.size();
 }
 
 void Graph::remove_node(uint32_t id)
